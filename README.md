@@ -47,6 +47,25 @@ python server.py
 
 Open [http://127.0.0.1:8000](http://127.0.0.1:8000). Type in the conversation box, or click **Start talking**.
 
+## Deploy on Vercel
+
+This app uses short API routes plus the browser for voice, which Vercel supports.
+
+1. Push the repo to GitHub.
+2. Go to [vercel.com/new](https://vercel.com/new) and import **Voice-Bot**.
+3. Add environment variable `OPENAI_API_KEY`.
+4. Deploy. Your link looks like `https://voice-bot-….vercel.app`.
+
+Or from this folder:
+
+```bash
+npx vercel login
+npx vercel --prod
+npx vercel env add OPENAI_API_KEY
+```
+
+Then redeploy after adding the key.
+
 ## Put it on GitHub
 
 On [github.com/new](https://github.com/new), create an empty repo (no README). Then:

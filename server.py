@@ -12,9 +12,10 @@ from pathlib import Path
 from typing import Any
 
 import certifi
+import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from websockets.asyncio.client import connect as ws_connect
 from websockets.exceptions import ConnectionClosed
@@ -40,6 +41,61 @@ async def index() -> FileResponse:
 @app.get("/api/voices")
 async def voices() -> list[dict[str, str]]:
     return VOICES
+
+
+@app.post("/api/session")
+async def create_ephemeral_session(request: Request) -> JSONResponse:
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not api_key or api_key in {"sk-...", "sk-"}:
+        return JSONResponse(
+            {"error": "Set OPENAI_API_KEY in the project .env file."}, status_code=500
+        )
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    voice = (body or {}).get("voice") or "marin"
+    if voice not in VOICE_IDS:
+        voice = "marin"
+    model = os.getenv("OPENAI_REALTIME_MODEL", DEFAULT_MODEL)
+    session = session_update(model=model, voice=voice, include_tools=True)["session"]
+    async with httpx.AsyncClient(timeout=20.0) as client:
+        response = await client.post(
+            "https://api.openai.com/v1/realtime/client_secrets",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={"session": session},
+        )
+    data = response.json()
+    if response.status_code >= 400:
+        err = data.get("error") or data
+        message = err.get("message") if isinstance(err, dict) else str(err)
+        return JSONResponse({"error": message or "Could not start a session."}, status_code=502)
+    value = data.get("value") or (data.get("client_secret") or {}).get("value")
+    if not value:
+        return JSONResponse({"error": "OpenAI did not return a session key."}, status_code=502)
+    return JSONResponse({"value": value, "model": model})
+
+
+@app.post("/api/tool")
+async def run_client_tool(request: Request) -> JSONResponse:
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    name = (body or {}).get("name") or ""
+    args = (body or {}).get("arguments") or {}
+    if isinstance(args, str):
+        try:
+            args = json.loads(args)
+        except json.JSONDecodeError:
+            args = {}
+    ip = client_ip(request.headers, request.client.host if request.client else None)
+    output = await run_tool(name, args if isinstance(args, dict) else {}, ip=ip, api_key=api_key)
+    return JSONResponse({"output": output})
 
 
 async def openai_session(

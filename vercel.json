@@ -1,0 +1,11 @@
+{
+  "framework": null,
+  "installCommand": "echo skip",
+  "buildCommand": "mkdir -p public && rm -rf public/static && cp -R static public/static",
+  "rewrites": [{ "source": "/", "destination": "/static/index.html" }],
+  "functions": {
+    "api/session.js": { "maxDuration": 30 },
+    "api/voices.js": { "maxDuration": 10 },
+    "api/tool.js": { "maxDuration": 60 }
+  }
+}

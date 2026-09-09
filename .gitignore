@@ -8,4 +8,4 @@ __pycache__/
 *.egg-info/
 dist/
 .idea/
-.vscode/
+.vercel
