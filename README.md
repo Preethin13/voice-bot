@@ -47,24 +47,16 @@ python server.py
 
 Open [http://127.0.0.1:8000](http://127.0.0.1:8000). Type in the conversation box, or click **Start talking**.
 
-## Deploy on Vercel
+## Deploy on Render (recommended)
 
-This app uses short API routes plus the browser for voice, which Vercel supports.
+Vercel is not a good host for this app. Use Render:
 
-1. Push the repo to GitHub.
-2. Go to [vercel.com/new](https://vercel.com/new) and import **Voice-Bot**.
-3. Add environment variable `OPENAI_API_KEY`.
-4. Deploy. Your link looks like `https://voice-bot-….vercel.app`.
+1. Open [https://render.com/deploy?repo=https://github.com/Preethin13/voice-bot](https://render.com/deploy?repo=https://github.com/Preethin13/voice-bot)
+2. Sign in with GitHub.
+3. Set `OPENAI_API_KEY` to your `sk-...` key.
+4. Click **Apply** / **Create**.
 
-Or from this folder:
-
-```bash
-npx vercel login
-npx vercel --prod
-npx vercel env add OPENAI_API_KEY
-```
-
-Then redeploy after adding the key.
+The live URL will look like `https://lumen-voice-bot.onrender.com`.
 
 ## Put it on GitHub
 

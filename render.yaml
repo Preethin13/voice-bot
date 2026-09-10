@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: lumen-voice-bot
+    runtime: python
+    plan: free
+    region: ohio
+    buildCommand: pip install -r requirements-web.txt
+    startCommand: python server.py
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: OPENAI_API_KEY
+        sync: false
